@@ -4,6 +4,9 @@ import java.util.Formatter;
 
 public class CPU6502 {
 
+    /*
+     * List of CPU registers, flags etc.
+     */
   private int  PC; // 16 bit program counter
   private byte SP; // 8 bit stack pointer
   private byte A;
@@ -17,7 +20,6 @@ public class CPU6502 {
   private byte U;  // unused flag
   private byte V;  // overflow flag
   private byte N;  // negative flag
-  
   private Interrupt interrupt = Interrupt.NONE;
 
   private enum Interrupt {
@@ -30,6 +32,157 @@ public class CPU6502 {
 
   private CPUMemMapper m;
 
+
+|------+--------+------+------+--------+--------+------+--------+------+------+--------+--------|
+|  Hex | Opcode | mode | size | cycles |   page |  Hex | Opcode | mode | size | cycles |   page |
+|      |        |      |      |        | cycles |      |        |      |      |        | cycles |
+|------+--------+------+------+--------+--------+------+--------+------+------+--------+--------|
+| 0x00 | BRK    | imp  |    1 |      7 |      1 | 0x20 | JSR    | abs  |    3 |      6 |      3 |
+| 0x01 | ORA    | izx  |    2 |      6 |      2 | 0x21 | AND    | izx  |    2 |      6 |      2 |
+| 0x02 | KIL    | imp  |    0 |      2 |      0 | 0x22 | KIL    | imp  |    0 |      2 |      0 |
+| 0x03 | SLO    | izx  |    0 |      8 |      0 | 0x23 | RLA    | izx  |    0 |      8 |      0 |
+| 0x04 | NOP    | zpg  |    2 |      3 |      2 | 0x24 | BIT    | zpg  |    2 |      3 |      2 |
+| 0x05 | ORA    | zpg  |    2 |      3 |      2 | 0x25 | AND    | zpg  |    2 |      3 |      2 |
+| 0x06 | ASL    | zpg  |    2 |      5 |      2 | 0x26 | ROL    | zpg  |    2 |      5 |      2 |
+| 0x07 | SLO    | zpg  |    0 |      5 |      0 | 0x27 | RLA    | zpg  |    0 |      5 |      0 |
+| 0x08 | PHP    | imp  |    1 |      3 |      1 | 0x28 | PLP    | imp  |    1 |      4 |      1 |
+| 0x09 | ORA    | imm  |    2 |      2 |      2 | 0x29 | AND    | imm  |    2 |      2 |      2 |
+| 0x0A | ASL    | acc  |    1 |      2 |      1 | 0x2A | ROL    | acc  |    1 |      2 |      1 |
+| 0x0B | ANC    | imm  |    0 |      2 |      0 | 0x2B | ANC    | imm  |    0 |      2 |      0 |
+| 0x0C | NOP    | abs  |    3 |      4 |      3 | 0x2C | BIT    | abs  |    3 |      4 |      3 |
+| 0x0D | ORA    | abs  |    3 |      4 |      3 | 0x2D | AND    | abs  |    3 |      4 |      3 |
+| 0x0E | ASL    | abs  |    3 |      6 |      3 | 0x2E | ROL    | abs  |    3 |      6 |      3 |
+| 0x0F | SLO    | abs  |    0 |      6 |      0 | 0x2F | RLA    | abs  |    0 |      6 |      0 |
+| 0x10 | BPL    | rel  |    2 |      2 |      2 | 0x30 | BMI    | rel  |    2 |      2 |      2 |
+| 0x11 | ORA    | izy  |    2 |      5 |      2 | 0x31 | AND    | izy  |    2 |      5 |      2 |
+| 0x12 | KIL    | imp  |    0 |      2 |      0 | 0x32 | KIL    | imp  |    0 |      2 |      0 |
+| 0x13 | SLO    | izy  |    0 |      8 |      0 | 0x33 | RLA    | izy  |    0 |      8 |      0 |
+| 0x14 | NOP    | zpx  |    2 |      4 |      2 | 0x34 | NOP    | zpx  |    2 |      4 |      2 |
+| 0x15 | ORA    | zpx  |    2 |      4 |      2 | 0x35 | AND    | zpx  |    2 |      4 |      2 |
+| 0x16 | ASL    | zpx  |    2 |      6 |      2 | 0x36 | ROL    | zpx  |    2 |      6 |      2 |
+| 0x17 | SLO    | zpx  |    0 |      6 |      0 | 0x37 | RLA    | zpx  |    0 |      6 |      0 |
+| 0x18 | CLC    | imp  |    1 |      2 |      1 | 0x38 | SEC    | imp  |    1 |      2 |      1 |
+| 0x19 | ORA    | aby  |    3 |      4 |      3 | 0x39 | AND    | aby  |    3 |      4 |      3 |
+| 0x1A | NOP    | imp  |    1 |      2 |      1 | 0x3A | NOP    | imp  |    1 |      2 |      1 |
+| 0x1B | SLO    | aby  |    0 |      7 |      0 | 0x3B | RLA    | aby  |    0 |      7 |      0 |
+| 0x1C | NOP    | abx  |    3 |      4 |      3 | 0x3C | NOP    | abx  |    3 |      4 |      3 |
+| 0x1D | ORA    | abx  |    3 |      4 |      3 | 0x3D | AND    | abx  |    3 |      4 |      3 |
+| 0x1E | ASL    | abx  |    3 |      7 |      3 | 0x3E | ROL    | abx  |    3 |      7 |      3 |
+| 0x1F | SLO    | abx  |    0 |      7 |      0 | 0x3F | RLA    | abx  |    0 |      7 |      0 |
+|------+--------+------+------+--------+--------+------+--------+------+------+--------+--------|
+|  Hex | Opcode | mode | size | cycles |   page |  Hex | Opcode | mode | size | cycles |   page |
+|      |        |      |      |        | cycles |      |        |      |      |        | cycles |
+|------+--------+------+------+--------+--------+------+--------+------+------+--------+--------|
+| 0x40 | RTI    | imp  |    1 |      6 |      1 | 0x60 | RTS    | imp  |    1 |      6 |      1 |
+| 0x41 | EOR    | izx  |    2 |      6 |      2 | 0x61 | ADC    | izx  |    2 |      6 |      2 |
+| 0x42 | KIL    | imp  |    0 |      2 |      0 | 0x62 | KIL    | imp  |    0 |      2 |      0 |
+| 0x43 | SRE    | izx  |    0 |      8 |      0 | 0x63 | RRA    | izx  |    0 |      8 |      0 |
+| 0x44 | NOP    | zpg  |    2 |      3 |      2 | 0x64 | NOP    | zpg  |    2 |      3 |      2 |
+| 0x45 | EOR    | zpg  |    2 |      3 |      2 | 0x65 | ADC    | zpg  |    2 |      3 |      2 |
+| 0x46 | LSR    | zpg  |    2 |      5 |      2 | 0x66 | ROR    | zpg  |    2 |      5 |      2 |
+| 0x47 | SRE    | zpg  |    0 |      5 |      0 | 0x67 | RRA    | zpg  |    0 |      5 |      0 |
+| 0x48 | PHA    | imp  |    1 |      3 |      1 | 0x68 | PLA    | imp  |    1 |      4 |      1 |
+| 0x49 | EOR    | imm  |    2 |      2 |      2 | 0x69 | ADC    | imm  |    2 |      2 |      2 |
+| 0x4A | LSR    | acc  |    1 |      2 |      1 | 0x6A | ROR    | acc  |    1 |      2 |      1 |
+| 0x4B | ALR    | imm  |    0 |      2 |      0 | 0x6B | ARR    | imm  |    0 |      2 |      0 |
+| 0x4C | JMP    | abs  |    3 |      3 |      3 | 0x6C | JMP    | ind  |    3 |      5 |      3 |
+| 0x4D | EOR    | abs  |    3 |      4 |      3 | 0x6D | ADC    | abs  |    3 |      4 |      3 |
+| 0x4E | LSR    | abs  |    3 |      6 |      3 | 0x6E | ROR    | abs  |    3 |      6 |      3 |
+| 0x4F | SRE    | abs  |    0 |      6 |      0 | 0x6F | RRA    | abs  |    0 |      6 |      0 |
+| 0x50 | BVC    | rel  |    2 |      2 |      2 | 0x70 | BVS    | rel  |    2 |      2 |      2 |
+| 0x51 | EOR    | izy  |    2 |      5 |      2 | 0x71 | ADC    | izy  |    2 |      5 |      2 |
+| 0x52 | KIL    | imp  |    0 |      2 |      0 | 0x72 | KIL    | imp  |    0 |      2 |      0 |
+| 0x53 | SRE    | izy  |    0 |      8 |      0 | 0x73 | RRA    | izy  |    0 |      8 |      0 |
+| 0x54 | NOP    | zpx  |    2 |      4 |      2 | 0x74 | NOP    | zpx  |    2 |      4 |      2 |
+| 0x55 | EOR    | zpx  |    2 |      4 |      2 | 0x75 | ADC    | zpx  |    2 |      4 |      2 |
+| 0x56 | LSR    | zpx  |    2 |      6 |      2 | 0x76 | ROR    | zpx  |    2 |      6 |      2 |
+| 0x57 | SRE    | zpx  |    0 |      6 |      0 | 0x77 | RRA    | zpx  |    0 |      6 |      0 |
+| 0x58 | CLI    | imp  |    1 |      2 |      1 | 0x78 | SEI    | imp  |    1 |      2 |      1 |
+| 0x59 | EOR    | aby  |    3 |      4 |      3 | 0x79 | ADC    | aby  |    3 |      4 |      3 |
+| 0x5A | NOP    | imp  |    1 |      2 |      1 | 0x7A | NOP    | imp  |    1 |      2 |      1 |
+| 0x5B | SRE    | aby  |    0 |      7 |      0 | 0x7B | RRA    | aby  |    0 |      7 |      0 |
+| 0x5C | NOP    | abx  |    3 |      4 |      3 | 0x7C | NOP    | abx  |    3 |      4 |      3 |
+| 0x5D | EOR    | abx  |    3 |      4 |      3 | 0x7D | ADC    | abx  |    3 |      4 |      3 |
+| 0x5E | LSR    | abx  |    3 |      7 |      3 | 0x7E | ROR    | abx  |    3 |      7 |      3 |
+| 0x5F | SRE    | abx  |    0 |      7 |      0 | 0x7F | RRA    | abx  |    0 |      7 |      0 |
+|------+--------+------+------+--------+--------+------+--------+------+------+--------+--------|
+|  Hex | Opcode | mode | size | cycles |   page |  Hex | Opcode | mode | size | cycles |   page |
+|      |        |      |      |        | cycles |      |        |      |      |        | cycles |
+|------+--------+------+------+--------+--------+------+--------+------+------+--------+--------|
+| 0x80 | NOP    | imm  |    2 |      2 |      2 | 0xA0 | LDY    | imm  |    2 |      2 |      2 |
+| 0x81 | STA    | izx  |    2 |      6 |      2 | 0xA1 | LDA    | izx  |    2 |      6 |      2 |
+| 0x82 | NOP    | imm  |    0 |      2 |      0 | 0xA2 | LDX    | imm  |    2 |      2 |      2 |
+| 0x83 | SAX    | izx  |    0 |      6 |      0 | 0xA3 | LAX    | izx  |    0 |      6 |      0 |
+| 0x84 | STY    | zpg  |    2 |      3 |      2 | 0xA4 | LDY    | zpg  |    2 |      3 |      2 |
+| 0x85 | STA    | zpg  |    2 |      3 |      2 | 0xA5 | LDA    | zpg  |    2 |      3 |      2 |
+| 0x86 | STX    | zpg  |    2 |      3 |      2 | 0xA6 | LDX    | zpg  |    2 |      3 |      2 |
+| 0x87 | SAX    | zpg  |    0 |      3 |      0 | 0xA7 | LAX    | zpg  |    0 |      3 |      0 |
+| 0x88 | DEY    | imp  |    1 |      2 |      1 | 0xA8 | TAY    | imp  |    1 |      2 |      1 |
+| 0x89 | NOP    | imm  |    0 |      2 |      0 | 0xA9 | LDA    | imm  |    2 |      2 |      2 |
+| 0x8A | TXA    | imp  |    1 |      2 |      1 | 0xAA | TAX    | imp  |    1 |      2 |      1 |
+| 0x8B | XAA    | imm  |    0 |      2 |      0 | 0xAB | LAX    | imm  |    0 |      2 |      0 |
+| 0x8C | STY    | abs  |    3 |      4 |      3 | 0xAC | LDY    | abs  |    3 |      4 |      3 |
+| 0x8D | STA    | abs  |    3 |      4 |      3 | 0xAD | LDA    | abs  |    3 |      4 |      3 |
+| 0x8E | STX    | abs  |    3 |      4 |      3 | 0xAE | LDX    | abs  |    3 |      4 |      3 |
+| 0x8F | SAX    | abs  |    0 |      4 |      0 | 0xAF | LAX    | abs  |    0 |      4 |      0 |
+| 0x90 | BCC    | rel  |    2 |      2 |      2 | 0xB0 | BCS    | rel  |    2 |      2 |      2 |
+| 0x91 | STA    | izy  |    2 |      6 |      2 | 0xB1 | LDA    | izy  |    2 |      5 |      2 |
+| 0x92 | KIL    | imp  |    0 |      2 |      0 | 0xB2 | KIL    | imp  |    0 |      2 |      0 |
+| 0x93 | AHX    | izy  |    0 |      6 |      0 | 0xB3 | LAX    | izy  |    0 |      5 |      0 |
+| 0x94 | STY    | zpx  |    2 |      4 |      2 | 0xB4 | LDY    | zpx  |    2 |      4 |      2 |
+| 0x95 | STA    | zpx  |    2 |      4 |      2 | 0xB5 | LDA    | zpx  |    2 |      4 |      2 |
+| 0x96 | STX    | zpy  |    2 |      4 |      2 | 0xB6 | LDX    | zpy  |    2 |      4 |      2 |
+| 0x97 | SAX    | zpy  |    0 |      4 |      0 | 0xB7 | LAX    | zpy  |    0 |      4 |      0 |
+| 0x98 | TYA    | imp  |    1 |      2 |      1 | 0xB8 | CLV    | imp  |    1 |      2 |      1 |
+| 0x99 | STA    | aby  |    3 |      5 |      3 | 0xB9 | LDA    | aby  |    3 |      4 |      3 |
+| 0x9A | TXS    | imp  |    1 |      2 |      1 | 0xBA | TSX    | imp  |    1 |      2 |      1 |
+| 0x9B | TAS    | aby  |    0 |      5 |      0 | 0xBB | LAS    | aby  |    0 |      4 |      0 |
+| 0x9C | SHY    | abx  |    0 |      5 |      0 | 0xBC | LDY    | abx  |    3 |      4 |      3 |
+| 0x9D | STA    | abx  |    3 |      5 |      3 | 0xBD | LDA    | abx  |    3 |      4 |      3 |
+| 0x9E | SHX    | aby  |    0 |      5 |      0 | 0xBE | LDX    | aby  |    3 |      4 |      3 |
+| 0x9F | AHX    | aby  |    0 |      5 |      0 | 0xBF | LAX    | aby  |    0 |      4 |      0 |
+|------+--------+------+------+--------+--------+------+--------+------+------+--------+--------|
+|  Hex | Opcode | mode | size | cycles |   page |  Hex | Opcode | mode | size | cycles |   page |
+|      |        |      |      |        | cycles |      |        |      |      |        | cycles |
+|------+--------+------+------+--------+--------+------+--------+------+------+--------+--------|
+| 0xC0 | CPY    | imm  |    2 |      2 |      2 | 0xE0 | CPX    | imm  |    2 |      2 |      2 |
+| 0xC1 | CMP    | izx  |    2 |      6 |      2 | 0xE1 | SBC    | izx  |    2 |      6 |      2 |
+| 0xC2 | NOP    | imm  |    0 |      2 |      0 | 0xE2 | NOP    | imm  |    0 |      2 |      0 |
+| 0xC3 | DCP    | izx  |    0 |      8 |      0 | 0xE3 | ISC    | izx  |    0 |      8 |      0 |
+| 0xC4 | CPY    | zpg  |    2 |      3 |      2 | 0xE4 | CPX    | zpg  |    2 |      3 |      2 |
+| 0xC5 | CMP    | zpg  |    2 |      3 |      2 | 0xE5 | SBC    | zpg  |    2 |      3 |      2 |
+| 0xC6 | DEC    | zpg  |    2 |      5 |      2 | 0xE6 | INC    | zpg  |    2 |      5 |      2 |
+| 0xC7 | DCP    | zpg  |    0 |      5 |      0 | 0xE7 | ISC    | zpg  |    0 |      5 |      0 |
+| 0xC8 | INY    | imp  |    1 |      2 |      1 | 0xE8 | INX    | imp  |    1 |      2 |      1 |
+| 0xC9 | CMP    | imm  |    2 |      2 |      2 | 0xE9 | SBC    | imm  |    2 |      2 |      2 |
+| 0xCA | DEX    | imp  |    1 |      2 |      1 | 0xEA | NOP    | imp  |    1 |      2 |      1 |
+| 0xCB | AXS    | imm  |    0 |      2 |      0 | 0xEB | SBC    | imm  |    0 |      2 |      0 |
+| 0xCC | CPY    | abs  |    3 |      4 |      3 | 0xEC | CPX    | abs  |    3 |      4 |      3 |
+| 0xCD | CMP    | abs  |    3 |      4 |      3 | 0xED | SBC    | abs  |    3 |      4 |      3 |
+| 0xCE | DEC    | abs  |    3 |      6 |      3 | 0xEE | INC    | abs  |    3 |      6 |      3 |
+| 0xCF | DCP    | abs  |    0 |      6 |      0 | 0xEF | ISC    | abs  |    0 |      6 |      0 |
+| 0xD0 | BNE    | rel  |    2 |      2 |      2 | 0xF0 | BEQ    | rel  |    2 |      2 |      2 |
+| 0xD1 | CMP    | izy  |    2 |      5 |      2 | 0xF1 | SBC    | izy  |    2 |      5 |      2 |
+| 0xD2 | KIL    | imp  |    0 |      2 |      0 | 0xF2 | KIL    | imp  |    0 |      2 |      0 |
+| 0xD3 | DCP    | izy  |    0 |      8 |      0 | 0xF3 | ISC    | izy  |    0 |      8 |      0 |
+| 0xD4 | NOP    | zpx  |    2 |      4 |      2 | 0xF4 | NOP    | zpx  |    2 |      4 |      2 |
+| 0xD5 | CMP    | zpx  |    2 |      4 |      2 | 0xF5 | SBC    | zpx  |    2 |      4 |      2 |
+| 0xD6 | DEC    | zpx  |    2 |      6 |      2 | 0xF6 | INC    | zpx  |    2 |      6 |      2 |
+| 0xD7 | DCP    | zpx  |    0 |      6 |      0 | 0xF7 | ISC    | zpx  |    0 |      6 |      0 |
+| 0xD8 | CLD    | imp  |    1 |      2 |      1 | 0xF8 | SED    | imp  |    1 |      2 |      1 |
+| 0xD9 | CMP    | aby  |    3 |      4 |      3 | 0xF9 | SBC    | aby  |    3 |      4 |      3 |
+| 0xDA | NOP    | imp  |    1 |      2 |      1 | 0xFA | NOP    | imp  |    1 |      2 |      1 |
+| 0xDB | DCP    | aby  |    0 |      7 |      0 | 0xFB | ISC    | aby  |    0 |      7 |      0 |
+| 0xDC | NOP    | abx  |    3 |      4 |      3 | 0xFC | NOP    | abx  |    3 |      4 |      3 |
+| 0xDD | CMP    | abx  |    3 |      4 |      3 | 0xFD | SBC    | abx  |    3 |      4 |      3 |
+| 0xDE | DEC    | abx  |    3 |      7 |      3 | 0xFE | INC    | abx  |    3 |      7 |      3 |
+| 0xDF | DCP    | abx  |    0 |      7 |      0 | 0xFF | ISC    | abx  |    0 |      7 |      0 |
+|------+--------+------+------+--------+--------+------+--------+------+------+--------+--------|
+
+
+
+
+    // List of all the opcodes
   private String[] instructionNames = { //
       "BRK", "ORA", "KIL", "SLO", "NOP", "ORA", "ASL", "SLO", // 00-08
       "PHP", "ORA", "ASL", "ANC", "NOP", "ORA", "ASL", "SLO", // 08-16
