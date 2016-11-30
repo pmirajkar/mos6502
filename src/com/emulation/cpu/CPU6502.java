@@ -414,7 +414,7 @@ public class CPU6502 {
       case 0x1D:
         this.ora(instr.address, instr.opcode, instr.mode);
         break;
-      // KIL (unofficial)
+      // KIL (illegal)
       case 0x02:
       case 0x12:
       case 0x22:
@@ -429,13 +429,38 @@ public class CPU6502 {
       case 0xf2:
         // stop cpu
         break;
-      // unofficial
+      // illegal
       case 0x03:
         this.slo(instr.address, instr.opcode, instr.mode);
         break;
       case 0x04:
       case 0x44:
       case 0x64:
+      case 0x1a:
+      case 0x3a:
+      case 0x5a:
+      case 0x7a:
+      case 0xda:
+      case 0xEA:
+      case 0xfa:
+      case 0x80:
+      case 0x82:
+      case 0xc2:
+      case 0xe2:
+      case 0x89:
+      case 0x14:
+      case 0x34:
+      case 0x54:
+      case 0x74:
+      case 0xd4:
+      case 0xf4:
+      case 0x0C:
+      case 0x1c:
+      case 0x3c:
+      case 0x5c:
+      case 0x7c:
+      case 0xdc:
+      case 0xfc:
         this.nop(instr.address, instr.opcode, instr.mode);
         break;
       case 0x06:
@@ -448,7 +473,7 @@ public class CPU6502 {
       case 0x08:
         this.php(instr.address, instr.opcode, instr.mode);
         break;
-      // anc (unofficial)
+      // anc (illegal)
       case 0x0B:
       case 0x2B:
         this.anc(instr.address, instr.opcode, instr.mode);
@@ -472,13 +497,13 @@ public class CPU6502 {
       case 0x3D:
         this.and(instr.address, instr.opcode, instr.mode);
         break;
-      // unofficial
+      // illegal
       case 0x23:
-      case 0x33:
       case 0x27:
+      case 0x2f:
+      case 0x33:
       case 0x37:
       case 0x3b:
-      case 0x2f:
       case 0x3f:
         this.rla(instr.address, instr.opcode, instr.mode);
         break;
@@ -491,7 +516,161 @@ public class CPU6502 {
       case 0x28:
         this.plp(instr.address, instr.opcode, instr.mode);
         break;
-      
+      case 0x30:
+        this.bmi(instr.address, instr.opcode, instr.mode);
+        break;
+      case 0x38:
+        this.sec(instr.address, instr.opcode, instr.mode);
+        break;
+      case 0x40:
+        this.rti(instr.address, instr.opcode, instr.mode);
+        break;
+      case 0x41:
+      case 0x45:
+      case 0x49:
+      case 0x4D:
+      case 0x51:
+      case 0x55:
+      case 0x59:
+      case 0x5D:
+        this.eor(instr.address, instr.opcode, instr.mode);
+        break;
+      // SRE (illegal)
+      case 0x43:
+      case 0x47:
+      case 0x4F:
+      case 0x53:
+      case 0x57:
+      case 0x5B:
+      case 0x5F:
+        this.sre(instr.address, instr.opcode, instr.mode);
+        break;
+      case 0x46:
+      case 0x4A:
+      case 0x4E:
+      case 0x56:
+      case 0x5E:
+        this.lsr(instr.address, instr.opcode, instr.mode);
+      case 0x48:
+        this.pha(instr.address, instr.opcode, instr.mode);
+        // ALR (illegal)
+      case 0x4B:
+        this.alr(instr.address, instr.opcode, instr.mode);
+        break;
+      case 0x4C:
+      case 0x6C:
+        this.jmp(instr.address, instr.opcode, instr.mode);
+        break;
+      case 0x50:
+        this.bvc(instr.address, instr.opcode, instr.mode);
+        break;
+      case 0x58:
+        this.cli(instr.address, instr.opcode, instr.mode);
+        break;
+      case 0x60:
+        this.rts(instr.address, instr.opcode, instr.mode);
+        break;
+      case 0x61:
+      case 0x65:
+      case 0x69:
+      case 0x6D:
+      case 0x71:
+      case 0x75:
+      case 0x79:
+      case 0x7D:
+        this.adc(instr.address, instr.opcode, instr.mode);
+        break;
+      // RRA (illegal)
+      case 0x63:
+      case 0x73:
+      case 0x67:
+      case 0x77:
+      case 0x7b:
+      case 0x6f:
+      case 0x7f:
+        this.rra(instr.address, instr.opcode, instr.mode);
+      case 0x66:
+        this.ror(instr.address, instr.opcode, instr.mode);
+      case 0x68:
+        this.pla(instr.address, instr.opcode, instr.mode);
+        // illegal
+      case 0x6B:
+        this.arr(instr.address, instr.opcode, instr.mode);
+      case 0x70:
+        this.bvs(instr.address, instr.opcode, instr.mode);
+        break;
+      case 0x78:
+        this.sei(instr.address, instr.opcode, instr.mode);
+        break;
+      case 0x81:
+      case 0x85:
+      case 0x8d:
+      case 0x91:
+      case 0x95:
+      case 0x99:
+      case 0x9d:
+        this.sta(instr.address, instr.opcode, instr.mode);
+        break;
+      // illegal
+      case 0x83:
+      case 0x87:
+      case 0x8F:
+      case 0x97:
+        this.sax(instr.address, instr.opcode, instr.mode);
+        break;
+      case 0x84:
+      case 0x8C:
+      case 0x94:
+        this.sty(instr.address, instr.opcode, instr.mode);
+        break;
+      case 0x86:
+      case 0x8E:
+      case 0x96:
+        this.stx(instr.address, instr.opcode, instr.mode);
+        break;
+      case 0x88:
+        this.dey(instr.address, instr.opcode, instr.mode);
+        break;
+      case 0x8A:
+        this.txa(instr.address, instr.opcode, instr.mode);
+        break;
+      // illegal
+      case 0x8B:
+        this.xaa(instr.address, instr.opcode, instr.mode);
+        break;
+      case 0x90:
+        this.bcc(instr.address, instr.opcode, instr.mode);
+        break;
+      // illegal
+      case 0x93:
+      case 0x9f:
+        this.ahx(instr.address, instr.opcode, instr.mode);
+        break;
+      case 0x98:
+        this.tya(instr.address, instr.opcode, instr.mode);
+        break;
+      case 0x9A:
+        this.txs(instr.address, instr.opcode, instr.mode);
+        break;
+      // illegal
+      case 0x9B:
+        this.tas(instr.address, instr.opcode, instr.mode);
+        break;
+      // illegal
+      case 0x9C:
+        this.shy(instr.address, instr.opcode, instr.mode);
+        break;
+      // illegal
+      case 0x9E:
+        this.shx(instr.address, instr.opcode, instr.mode);
+        break;
+      case 0xA0:
+      case 0xA4:
+      case 0xAC:
+      case 0xB4:
+      case 0xBC:
+        this.ldy(instr.address, instr.opcode, instr.mode);
+        break;
       case 0xA1:
       case 0xA5:
       case 0xA9:
@@ -502,7 +681,116 @@ public class CPU6502 {
       case 0xBD:
         this.lda(instr.address, instr.opcode, instr.mode);
         break;
-      
+      case 0xA2:
+      case 0xA6:
+      case 0xAE:
+      case 0xB6:
+      case 0xBE:
+        this.ldx(instr.address, instr.opcode, instr.mode);
+        break;
+      case 0xA3:
+      case 0xA7:
+      case 0xAB:
+      case 0xAF:
+      case 0xB3:
+      case 0xB7:
+      case 0xBF:
+        this.lax(instr.address, instr.opcode, instr.mode);
+        break;
+      case 0xA8:
+        this.tay(instr.address, instr.opcode, instr.mode);
+        break;
+      case 0xAA:
+        this.tax(instr.address, instr.opcode, instr.mode);
+        break;
+      case 0xB0:
+        this.bcs(instr.address, instr.opcode, instr.mode);
+        break;
+      case 0xB8:
+        this.clv(instr.address, instr.opcode, instr.mode);
+        break;
+      case 0xBA:
+        this.tsx(instr.address, instr.opcode, instr.mode);
+        break;
+      // illegal
+      case 0xBB:
+        this.las(instr.address, instr.opcode, instr.mode);
+        break;
+      case 0xC0:
+        this.cpy(instr.address, instr.opcode, instr.mode);
+        break;
+      case 0xC1:
+        this.cmp(instr.address, instr.opcode, instr.mode);
+        break;
+      // illegal
+      case 0xC3:
+      case 0xC7:
+      case 0xCF:
+      case 0xD3:
+      case 0xD7:
+      case 0xDB:
+      case 0xDF:
+        this.dcp(instr.address, instr.opcode, instr.mode);
+        break;
+      case 0xC6:
+        this.dec(instr.address, instr.opcode, instr.mode);
+        break;
+      case 0xC8:
+        this.iny(instr.address, instr.opcode, instr.mode);
+        break;
+      case 0xCA:
+        this.dex(instr.address, instr.opcode, instr.mode);
+        break;
+      // illegal
+      case 0xCB:
+        this.axs(instr.address, instr.opcode, instr.mode);
+        break;
+      case 0xD0:
+        this.bne(instr.address, instr.opcode, instr.mode);
+        break;
+      case 0xD8:
+        this.cld(instr.address, instr.opcode, instr.mode);
+        break;
+      case 0xE0:
+      case 0xE4:
+      case 0xEC:
+        this.cpx(instr.address, instr.opcode, instr.mode);
+        break;
+      case 0xE1:
+      case 0xE5:
+      case 0xE9:
+      case 0xEB:
+      case 0xED:
+      case 0xF1:
+      case 0xF5:
+      case 0xF9:
+      case 0xFD:
+        this.sbc(instr.address, instr.opcode, instr.mode);
+        break;
+      case 0xE3:
+      case 0xE7:
+      case 0xEF:
+      case 0xF3:
+      case 0xF7:
+      case 0xFB:
+      case 0xFF:
+        this.isc(instr.address, instr.opcode, instr.mode);
+        break;
+      case 0xE6:
+      case 0xEE:
+      case 0xF6:
+      case 0xFE:
+        this.inc(instr.address, instr.opcode, instr.mode);
+        break;
+      case 0xE8:
+        this.inx(instr.address, instr.opcode, instr.mode);
+        break;
+      case 0xF0:
+        this.beq(instr.address, instr.opcode, instr.mode);
+        break;
+      case 0xF8:
+        this.sed(instr.address, instr.opcode, instr.mode);
+        break;
       default:
         break;
     }
@@ -770,11 +1058,14 @@ public class CPU6502 {
     byte c = this.C;
     this.A = (byte) (a + b + c);
     this.setZN(this.A);
+    
     if (((a) + (b) + (c)) > 0xFF) {
       this.C = 1;
     } else {
       this.C = 0;
     }
+    
+    // check for overflow
     if ((((a ^ b) & 0x80) == 0) && (((a ^ this.A) & 0x80) != 0)) {
       this.V = 1;
     } else {
@@ -807,7 +1098,7 @@ public class CPU6502 {
   // BCC - Branch if Carry Clear
   public void bcc(int address, int PC, Modes mode) {
     if (this.C == 0) {
-      PC = address;
+      this.PC = address;
       this.addBranchCycles(address, PC, mode);
     }
   }
@@ -815,7 +1106,7 @@ public class CPU6502 {
   // BCS - Branch if Carry Set
   public void bcs(int address, int PC, Modes mode) {
     if (this.C != 0) {
-      PC = address;
+      this.PC = address;
       this.addBranchCycles(address, PC, mode);
     }
   }
@@ -823,7 +1114,7 @@ public class CPU6502 {
   // BEQ - Branch if Equal
   public void beq(int address, int PC, Modes mode) {
     if (this.Z != 0) {
-      PC = address;
+      this.PC = address;
       this.addBranchCycles(address, PC, mode);
     }
   }
@@ -839,7 +1130,7 @@ public class CPU6502 {
   // BMI - Branch if Minus
   public void bmi(int address, int PC, Modes mode) {
     if (this.N != 0) {
-      PC = address;
+      this.PC = address;
       this.addBranchCycles(address, PC, mode);
     }
   }
@@ -847,7 +1138,7 @@ public class CPU6502 {
   // BNE - Branch if Not Equal
   public void bne(int address, int PC, Modes mode) {
     if (this.Z == 0) {
-      PC = address;
+      this.PC = address;
       this.addBranchCycles(address, PC, mode);
     }
   }
@@ -861,15 +1152,6 @@ public class CPU6502 {
   }
   
   // BRK - Force Interrupt
-  // Affects Flags: B
-  //
-  // MODE     SYNTAX  HEX  LEN  TIM
-  // Implied  BRK     $00  1    7
-  //
-  // BRK causes a non-maskable interrupt and increments the program counter by
-  // one. Therefore an RTI will go to the address of the BRK +2 so that BRK
-  // may be used to replace a two-byte instruction for debugging and the
-  // subsequent RTI will be correct.
   public void brk(int address, int PC, Modes mode) {
     // push PC to stack
     this.push16(PC);
@@ -884,7 +1166,7 @@ public class CPU6502 {
   // BVC - Branch if Overflow Clear
   public void bvc(int address, int PC, Modes mode) {
     if (this.V == 0) {
-      PC = address;
+      this.PC = address;
       this.addBranchCycles(address, PC, mode);
     }
   }
@@ -892,7 +1174,7 @@ public class CPU6502 {
   // BVS - Branch if Overflow Set
   public void bvs(int address, int PC, Modes mode) {
     if (this.V != 0) {
-      PC = address;
+      this.PC = address;
       this.addBranchCycles(address, PC, mode);
     }
   }
@@ -956,7 +1238,7 @@ public class CPU6502 {
   
   // EOR - Exclusive OR
   public void eor(int address, int PC, Modes mode) {
-    this.A = (byte) (this.A ^ this.read(address));
+    this.A = (byte) ((this.A ^ this.read(address)) & 0xff);
     this.setZN(this.A);
   }
   
@@ -1011,12 +1293,12 @@ public class CPU6502 {
   // LSR - Logical Shift Right
   public void lsr(int address, int PC, Modes mode) {
     if (mode == Modes.acc) {
-      this.C = (byte) (this.A & 1);
+      this.C = (byte) (this.A & 0x1);
       this.A >>= 1;
       this.setZN(this.A);
     } else {
       byte value = this.read(address);
-      this.C = (byte) (value & 1);
+      this.C = (byte) (value & 0x1);
       value >>= 1;
       this.write(address, value);
       this.setZN(value);
@@ -1079,6 +1361,9 @@ public class CPU6502 {
   }
   
   // ROR - Rotate Right
+  // Move all bits to right
+  // move carry to bit 7
+  // move bit 0 to carry
   public void ror(int address, int PC, Modes mode) {
     if (mode == Modes.acc) {
       byte c = this.C;
@@ -1097,13 +1382,17 @@ public class CPU6502 {
   
   // RTI - Return from Interrupt
   public void rti(int address, int PC, Modes mode) {
+    // flags NVUBDIZC
+    // NES keeps flag B to 0, flag U to unchanged
+    // val & 0xEF makes B to 0
+    // val & 0x20 keeps U unchanged, makes rest 0
     this.setFlags((this.pull() & 0xEF) | 0x20);
-    PC = this.pull16();
+    this.PC = this.pull16();
   }
   
   // RTS - Return from Subroutine
   public void rts(int address, int PC, Modes mode) {
-    PC = this.pull16() + 1;
+    this.PC = this.pull16() + 1;
   }
   
   // SBC - Subtract with Carry
